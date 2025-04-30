@@ -1,5 +1,6 @@
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
+import axios from "axios"; // You'll need to install axios if not already installed
 
 const f = createUploadthing();
 
@@ -35,7 +36,20 @@ export const ourFileRouter = {
 
       console.log("file url", file.ufsUrl);
 
-      // !!! Whatever is returned here is sent to the clientside `onClientUploadComplete` callback
+      // Make a POST request to the head detection API
+      try {
+        const response = await axios.post("http://localhost:8000/detect-head", {
+          url: file.ufsUrl,
+        });
+
+        // Log the API response
+        console.log("Head detection response:", response.data);
+
+        // You can process the response here if needed
+      } catch (error) {
+        console.error("Error calling head detection API:", error);
+      }
+
       return { uploadedBy: metadata.userId };
     }),
 } satisfies FileRouter;
