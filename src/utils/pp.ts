@@ -182,14 +182,31 @@ export async function puppet(imageUrl: string, desiredUrl: string) {
     await new Promise((resolve) => setTimeout(resolve, 100));
     await page.mouse.up();
 
-    console.log("Clicked at coordinates (478, 142) with improved method");
+    // await new Promise((resolve) => setTimeout(resolve, 1000));
+    // await page.mouse.move(478, 142, { steps: 10 });
+    // await page.mouse.down();
+    // await new Promise((resolve) => setTimeout(resolve, 100));
+    // await page.mouse.up();
+    console.log("Set slider value to 1");
 
-    // console.log("Set slider value to 1");
+    console.log("Attempting to click radio button using exact selector...");
+    try {
+      await page.waitForSelector(
+        'input[type="radio"][name="radio-component-217"][value="Quality"]',
+        { timeout: 5000 }
+      );
+      await page.click(
+        'input[type="radio"][name="radio-component-217"][value="Quality"]'
+      );
+      console.log("Clicked radio button using exact selector");
+    } catch (error) {
+      console.log("Could not click using exact selector:", error.message);
+    }
   } catch (error) {
     console.error("Error:", error);
   } finally {
     // Wait to see the result before closing
     await new Promise((resolve) => setTimeout(resolve, 5000));
-    await browser.close();
+    // await browser.close();
   }
 }
