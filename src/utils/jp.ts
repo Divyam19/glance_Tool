@@ -1,23 +1,157 @@
 // import axios from "axios";
-// // import * as fs from "fs";
-// // import * as path from "path";
+// import fs from "fs";
+// import path from "path";
 // import puppeteer from "puppeteer";
 
-// async function puppet(imageUrl: string, desiredUrl: string) {
+// export async function puppet(imageUrl: string, desiredUrl: string) {
+//   const browser = await puppeteer.launch({
+//     headless: false,
+//     ignoreHTTPSErrors: true,
+//     args: [
+//       "--ignore-certificate-errors",
+//       "--no-sandbox",
+//       "--disable-web-security",
+//       "--allow-insecure-localhost",
+//       "--disable-extensions",
+//       "--disable-features=IsolateOrigins,site-per-process",
+//       "--disable-content-security-policy",
+//       "--disable-features=BlockInsecurePrivateNetworkRequests",
+//       "--disable-features=AdTagging",
+//       "--disable-client-side-phishing-detection",
+//     ],
+//   });
+
+//   const page = await browser.newPage();
+
+//   // Disable content blocking
+//   await page.setUserAgent(
+//     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+//   );
+
+//   // Disable request interception (this might be causing issues)
+//   // Instead of intercepting all requests, let's just proceed normally
+//   // await page.setRequestInterception(true);
+//   // page.on("request", (request) => {
+//   //   request.continue();
+//   // });
+
 //   try {
-//     const response = await axios.get(imageUrl, { responseType: "stream" });
+//     // Navigate to the URL with a longer timeout
+//     console.log("Navigating to:", desiredUrl);
 
-//     // Launch Puppeteer and open the desired URL
-//     const browser = await puppeteer.launch({ headless: false });
-//     const page = await browser.newPage();
-//     await page.setViewport({ width: 1300, height: 700 });
-//     await page.setUserAgent(
-//       "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/78.0.3904.108 Safari/537.36"
-//     );
+//     // Try a different navigation approach
+//     await page.evaluate((url) => {
+//       window.location.href = url;
+//     }, desiredUrl);
 
-//     await page.goto(desiredUrl);
+//     // Wait for navigation to complete
+//     await page.waitForNavigation({ timeout: 120000 }).catch((e) => {
+//       console.log("Navigation timeout, but continuing anyway:", e.message);
+//     });
 
-//     //clicking the first 3 check boxes
+//     // Wait a moment to ensure page is fully loaded
+//     await new Promise((resolve) => setTimeout(resolve, 5000));
+
+//     console.log("Checking current page...");
+//     const currentUrl = await page.url();
+//     console.log("Current URL:", currentUrl);
+
+//     // Check if we're on the security warning page
+//     const isWarningPage = await page.evaluate(() => {
+//       const bodyText = document.body.innerText || "";
+//       return (
+//         bodyText.includes("doesn't support a secure connection") ||
+//         bodyText.includes("not secure") ||
+//         bodyText.includes("Your connection is not private")
+//       );
+//     });
+
+//     if (isWarningPage) {
+//       console.log("Detected security warning page, attempting to continue...");
+
+//       // Try multiple approaches to click the continue button
+
+//       // First approach: Try clicking by selector
+//       try {
+//         // Look for the specific button visible in your screenshot
+//         const buttonSelector =
+//           'button[id="continue-to-site"], button:contains("Continue to site"), .proceed-button, #proceed-button';
+//         const buttonExists = await page.$(buttonSelector);
+
+//         if (buttonExists) {
+//           await page.click(buttonSelector);
+//           console.log("Clicked continue button by selector");
+//           await new Promise((resolve) => setTimeout(resolve, 2000));
+//         } else {
+//           console.log("Button not found by selector");
+//         }
+//       } catch (clickError) {
+//         console.log("Error clicking by selector:", clickError.message);
+//       }
+
+//       // Second approach: Try clicking by evaluating in page context
+//       if (
+//         await page.evaluate(() =>
+//           document.body.innerText.includes(
+//             "doesn't support a secure connection"
+//           )
+//         )
+//       ) {
+//         try {
+//           await page.evaluate(() => {
+//             // Try to find any button with text that includes "Continue"
+//             const allButtons = Array.from(document.querySelectorAll("button"));
+//             const continueButton = allButtons.find((btn) =>
+//               btn.innerText.includes("Continue to site")
+//             );
+
+//             if (continueButton) {
+//               continueButton.click();
+//               return true;
+//             }
+//             return false;
+//           });
+//           console.log("Attempted to click via page.evaluate");
+//           await new Promise((resolve) => setTimeout(resolve, 2000));
+//         } catch (evalError) {
+//           console.log("Error in page.evaluate:", evalError.message);
+//         }
+//       }
+
+//       // Third approach: Try clicking by coordinates based on the screenshot
+//       try {
+//         // Based on your screenshot, the button appears to be in the bottom left
+//         const viewportSize = await page.viewport();
+//         if (viewportSize) {
+//           // Click where the "Continue to site" button appears to be
+//           await page.mouse.click(220, viewportSize.height - 120);
+//           console.log("Clicked at coordinates where button should be");
+//           await new Promise((resolve) => setTimeout(resolve, 2000));
+//         }
+//       } catch (coordError) {
+//         console.log("Error clicking by coordinates:", coordError.message);
+//       }
+//     }
+
+//     // Try a direct approach to bypass the blocking
+//     try {
+//       console.log("Attempting direct navigation to bypass blocking...");
+//       // Try to directly navigate to the site using a different method
+//       await page.evaluate((url) => {
+//         document.location.href = url;
+//       }, desiredUrl);
+
+//       await new Promise((resolve) => setTimeout(resolve, 5000));
+//     } catch (error) {
+//       console.log("Error with direct navigation:", error.message);
+//     }
+
+//     console.log("Proceeding with the rest of the script...");
+
+//     // Wait to ensure page is fully loaded before interacting with elements
+//     await new Promise((resolve) => setTimeout(resolve, 3000));
+
+//     // Clicking the first 3 checkboxes
 //     const checkboxes = await page.$$('[data-testid="checkbox"]');
 //     for (let i = 0; i < Math.min(3, checkboxes.length); i++) {
 //       const isChecked = await (
@@ -27,8 +161,9 @@
 //         await checkboxes[i].click();
 //       }
 //     }
+//     console.log("Clicked first 3 checkboxes");
 
-//     //selecting inpaint outpaint
+//     // Selecting "Inpaint or Outpaint" button
 //     await page.evaluate(() => {
 //       const buttons = document.querySelectorAll("button");
 //       for (const btn of buttons) {
@@ -38,280 +173,139 @@
 //         }
 //       }
 //     });
+//     console.log("Clicked Inpaint or Outpaint button");
 
-//     //setting slider to one
-//     await page.evaluate(() => {
-//       const slider = document.querySelector(
-//         'input[type="range"]'
-//       ) as HTMLInputElement;
-//       if (slider) {
-//         slider.value = "1"; // Set the desired value
-//         slider.dispatchEvent(new Event("input", { bubbles: true }));
-//         slider.dispatchEvent(new Event("change", { bubbles: true }));
+//     // Wait for any transitions or UI updates after clicking the button
+//     await new Promise((resolve) => setTimeout(resolve, 2000));
+
+//     // Download the image from the URL to a temporary file
+//     console.log("Downloading image from URL:", imageUrl);
+//     try {
+//       // Create a temporary directory if it doesn't exist
+//       const tempDir = path.join(__dirname, "../../temp");
+//       if (!fs.existsSync(tempDir)) {
+//         fs.mkdirSync(tempDir, { recursive: true });
 //       }
+
+//       // Download the image
+//       const response = await axios({
+//         url: imageUrl,
+//         method: "GET",
+//         responseType: "arraybuffer",
+//       });
+
+//       // Generate a unique filename
+//       const timestamp = new Date().getTime();
+//       const tempFilePath = path.join(tempDir, `temp_image_${timestamp}.jpg`);
+
+//       // Save the image to the temporary file
+//       fs.writeFileSync(tempFilePath, Buffer.from(response.data, "binary"));
+//       console.log("Image downloaded to:", tempFilePath);
+
+//       // Now upload the image to the page
+//       // Find the file input element
+//       const [fileInput] = await page.$$('input[type="file"]');
+
+//       if (fileInput) {
+//         // Upload the file
+//         await fileInput.uploadFile(tempFilePath);
+//         console.log("File uploaded successfully");
+
+//         // Wait for the image to be processed
+//         await new Promise((resolve) => setTimeout(resolve, 3000));
+//       } else {
+//         // If we can't find the file input, try to click on the drop area
+//         console.log("File input not found, trying to click on drop area");
+
+//         // Try to find and click the drop area
+//         const dropArea = await page.$(
+//           '.upload-box, [aria-label="Drop Image Here"], [role="button"]:has-text("Drop Image Here")'
+//         );
+//         if (dropArea) {
+//           await dropArea.click();
+//           await new Promise((resolve) => setTimeout(resolve, 1000));
+
+//           // Now try to find the file input again
+//           const [fileInputAfterClick] = await page.$$('input[type="file"]');
+//           if (fileInputAfterClick) {
+//             await fileInputAfterClick.uploadFile(tempFilePath);
+//             console.log("File uploaded after clicking drop area");
+//           } else {
+//             console.log(
+//               "Still couldn't find file input after clicking drop area"
+//             );
+//           }
+//         } else {
+//           console.log("Couldn't find drop area");
+
+//           // Last resort: try to find any element that might be related to file upload
+//           await page.evaluate(() => {
+//             // Look for elements with text related to upload
+//             const elements = Array.from(document.querySelectorAll("*"));
+//             const uploadElement = elements.find(
+//               (el) =>
+//                 el.textContent?.includes("Upload") ||
+//                 el.textContent?.includes("Drop Image") ||
+//                 el.textContent?.includes("Click to Upload")
+//             );
+
+//             if (uploadElement) {
+//               (uploadElement as HTMLElement).click();
+//             }
+//           });
+
+//           // Wait a moment and try to find the file input again
+//           await new Promise((resolve) => setTimeout(resolve, 1000));
+//           const [lastResortInput] = await page.$$('input[type="file"]');
+//           if (lastResortInput) {
+//             await lastResortInput.uploadFile(tempFilePath);
+//             console.log("File uploaded using last resort method");
+//           }
+//         }
+//       }
+
+//       // Clean up the temporary file
+//       try {
+//         fs.unlinkSync(tempFilePath);
+//         console.log("Temporary file deleted");
+//       } catch (cleanupError) {
+//         console.log("Error deleting temporary file:", cleanupError);
+//       }
+//     } catch (uploadError) {
+//       console.error("Error uploading image:", uploadError);
+//     }
+
+//     // clicking slider to value 1
+//     await page.evaluate(() => {
+//       window.scrollTo(0, 0);
 //     });
+//     await new Promise((resolve) => setTimeout(resolve, 1000));
+//     await page.mouse.move(478, 142, { steps: 10 });
+//     await page.mouse.down();
+//     await new Promise((resolve) => setTimeout(resolve, 100));
+//     await page.mouse.up();
 
-//     await page.waitForSelector('input[type="file"]');
-//     const fileInput = await page.$('input[type="file"]');
+//     console.log("Set slider value to 1");
 
-//     // Uploading the image file
-//     await fileInput.uploadFile(response); // 'response' should be a valid file path
-
-//     // Click the upload button
-//     await page.waitForSelector("#upload");
-//     await page.click("#upload");
-
-//     // Wait for the uploaded image URL to appear
-//     await page.waitForSelector("#upload-link", { timeout: 10000 });
-
-//     const screenshotPath = "./screenshot.png";
-//     await page.screenshot({ path: screenshotPath });
-
-//     console.log(`Screenshot saved at ${screenshotPath}`);
-
-//     await browser.close();
+//     // clicking quality button
+//     console.log("Attempting to click radio button using exact selector...");
+//     try {
+//       await page.waitForSelector(
+//         'input[type="radio"][name="radio-component-217"][value="Quality"]',
+//         { timeout: 5000 }
+//       );
+//       await page.click(
+//         'input[type="radio"][name="radio-component-217"][value="Quality"]'
+//       );
+//       console.log("Clicked radio button using exact selector");
+//     } catch (error) {
+//       console.log("Could not click using exact selector:", error.message);
+//     }
 //   } catch (error) {
 //     console.error("Error:", error);
+//   } finally {
+//     // Wait to see the result before closing
+//     await new Promise((resolve) => setTimeout(resolve, 5000));
+//     // await browser.close();
 //   }
 // }
-
-// puppet(
-//   "https://00bknuqmck.ufs.sh/f/DrDDb60yFzNPXvJmxAPr3VTkjhSdUvzuZf2QelKIi0YHPAB6",
-//   "http://35.247.134.171/?"
-// );
-
-import axios from "axios";
-import fs from "fs";
-import path from "path";
-import puppeteer from "puppeteer";
-
-export async function puppet(imageUrl: string, desiredUrl: string) {
-  try {
-    // Download image and save to disk
-    const response = await axios.get(imageUrl, { responseType: "stream" });
-    const filePath = path.resolve(__dirname, "temp-image.png");
-    const writer = fs.createWriteStream(filePath);
-    response.data.pipe(writer);
-
-    // await new Promise((resolve, reject) => {
-    //   writer.on("finish", resolve);
-    //   writer.on("error", reject);
-    // });
-
-    // Launch Puppeteer and open the desired URL
-    const browser = await puppeteer.launch({
-      headless: false,
-      args: ["--ignore-certificate-errors"],
-      // ignoreHTTPSErrors: true,
-    });
-    const page = await browser.newPage();
-    await page.setViewport({ width: 1300, height: 700 });
-    await page.setUserAgent(
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.6367.60 Safari/537.36 Brave/124"
-    );
-
-    await page.goto(desiredUrl);
-
-    // Clicking the first 3 checkboxes
-    const checkboxes = await page.$$('[data-testid="checkbox"]');
-    for (let i = 0; i < Math.min(3, checkboxes.length); i++) {
-      const isChecked = await (
-        await checkboxes[i].getProperty("checked")
-      ).jsonValue();
-      if (!isChecked) {
-        await checkboxes[i].click();
-      }
-    }
-
-    // Selecting "Inpaint or Outpaint" button
-    await page.evaluate(() => {
-      const buttons = document.querySelectorAll("button");
-      for (const btn of buttons) {
-        if (btn.innerHTML.trim() === "Inpaint or Outpaint") {
-          (btn as HTMLElement).click();
-          break;
-        }
-      }
-    });
-
-    // Setting slider to value 1
-    await page.evaluate(() => {
-      const slider = document.querySelector(
-        'input[type="range"]'
-      ) as HTMLInputElement;
-      if (slider) {
-        slider.value = "1";
-        slider.dispatchEvent(new Event("input", { bubbles: true }));
-        slider.dispatchEvent(new Event("change", { bubbles: true }));
-      }
-    });
-
-    // Uploading the file
-    await page.waitForSelector('input[type="file"]');
-    const fileInput = await page.$('input[type="file"]');
-    if (!fileInput) {
-      throw new Error("File input not found");
-    }
-    await fileInput.uploadFile(filePath);
-
-    // Click the upload button
-    await page.waitForSelector("#upload");
-    await page.click("#upload");
-
-    // Wait for the uploaded image URL to appear
-    await page.waitForSelector("#upload-link", { timeout: 10000 });
-
-    // Take a screenshot
-    const screenshotPath = "./screenshot.png";
-    await page.screenshot({ path: screenshotPath });
-    console.log(`Screenshot saved at ${screenshotPath}`);
-
-    await browser.close();
-
-    // Optional: delete temp file
-    fs.unlinkSync(filePath);
-  } catch (error) {
-    console.error("Error:", error);
-  }
-}
-
-// puppet(
-//   "https://00bknuqmck.ufs.sh/f/DrDDb60yFzNPXvJmxAPr3VTkjhSdUvzuZf2QelKIi0YHPAB6",
-//   "http://35.247.134.171/?"
-// );
-
-// Add event listeners to catch and log errors
-page.on("error", (err) => {
-  console.error("Page error:", err);
-});
-
-page.on("pageerror", (err) => {
-  console.error("Page error:", err);
-});
-
-page.on("console", (msg) => {
-  console.log("Page console:", msg.text());
-});
-
-// Navigate with a timeout and retry mechanism
-let loaded = false;
-let attempts = 0;
-
-while (!loaded && attempts < 3) {
-  try {
-    console.log(`Attempt ${attempts + 1} to navigate to ${desiredUrl}`);
-    await page.goto(desiredUrl, {
-      waitUntil: "networkidle2",
-      timeout: 30000,
-    });
-    loaded = true;
-  } catch (error) {
-    console.error(`Navigation error (attempt ${attempts + 1}):`, error);
-    attempts++;
-    if (attempts >= 3) {
-      throw new Error(`Failed to load page after ${attempts} attempts`);
-    }
-    await new Promise((r) => setTimeout(r, 2000)); // Wait 2 seconds before retrying
-  }
-}
-
-console.log(3);
-// Wait for page to be properly loaded
-await page.waitForTimeout(2000);
-
-// Clicking the first 3 checkboxes
-try {
-  let checkboxes = await page.$$('[data-testid="checkbox"]');
-  if (checkboxes.length === 0) {
-    console.log("No checkboxes found, waiting longer and trying again");
-    await page.waitForTimeout(3000);
-    checkboxes = await page.$$('[data-testid="checkbox"]');
-  }
-
-  for (let i = 0; i < Math.min(3, checkboxes.length); i++) {
-    const isChecked = await (
-      await checkboxes[i].getProperty("checked")
-    ).jsonValue();
-    if (!isChecked) {
-      await checkboxes[i].click();
-      await page.waitForTimeout(300); // Small delay between clicks
-    }
-  }
-} catch (error) {
-  console.error("Error clicking checkboxes:", error);
-}
-
-// Selecting "Inpaint or Outpaint" button
-try {
-  await page.evaluate(() => {
-    const buttons = document.querySelectorAll("button");
-    for (const btn of buttons) {
-      if (btn.innerHTML.trim() === "Inpaint or Outpaint") {
-        (btn as HTMLElement).click();
-        break;
-      }
-    }
-  });
-  await page.waitForTimeout(1000);
-} catch (error) {
-  console.error("Error clicking Inpaint or Outpaint button:", error);
-}
-
-// Setting slider to value 1
-try {
-  await page.evaluate(() => {
-    const slider = document.querySelector(
-      'input[type="range"]'
-    ) as HTMLInputElement;
-    if (slider) {
-      slider.value = "1";
-      slider.dispatchEvent(new Event("input", { bubbles: true }));
-      slider.dispatchEvent(new Event("change", { bubbles: true }));
-    } else {
-      console.error("Slider not found");
-    }
-  });
-  await page.waitForTimeout(500);
-} catch (error) {
-  console.error("Error setting slider value:", error);
-}
-
-// Uploading the file
-try {
-  console.log("Waiting for file input...");
-  await page.waitForSelector('input[type="file"]', { timeout: 5000 });
-  const fileInput = await page.$('input[type="file"]');
-  if (!fileInput) {
-    throw new Error("File input not found");
-  }
-
-  console.log(`Uploading file from ${filePath}`);
-  await fileInput.uploadFile(filePath);
-  await page.waitForTimeout(1000);
-} catch (error) {
-  console.error("Error uploading file:", error);
-  // Take screenshot to help debug
-  await page.screenshot({ path: "./error-upload.png" });
-  throw error;
-}
-
-// Click the upload button
-try {
-  console.log("Clicking upload button");
-  await page.waitForSelector("#upload", { timeout: 5000 });
-  await page.click("#upload");
-} catch (error) {
-  console.error("Error clicking upload button:", error);
-  await page.screenshot({ path: "./error-upload-button.png" });
-  throw error;
-}
-
-// Wait for the uploaded image URL to appear
-try {
-  console.log("Waiting for upload link to appear");
-  await page.waitForSelector("#upload-link", { timeout: 15000 });
-  const uploadedUrl = await page.$eval("#upload-link", (el) => el.textContent);
-  console.log("Uploaded image URL:", uploadedUrl);
-} catch (error) {
-  console.error("Error waiting for upload link:", error);
-}

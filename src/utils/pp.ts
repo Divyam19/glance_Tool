@@ -173,22 +173,18 @@ export async function puppet(imageUrl: string, desiredUrl: string) {
     console.log("Clicked Inpaint or Outpaint button");
 
     // clicking slider to value 1
-    await page.evaluate(() => {
-      window.scrollTo(0, 0);
-    });
+    // await page.evaluate(() => {
+    //   window.scrollTo(0, 0);
+    // });
     await new Promise((resolve) => setTimeout(resolve, 1000));
     await page.mouse.move(478, 142, { steps: 10 });
     await page.mouse.down();
     await new Promise((resolve) => setTimeout(resolve, 100));
     await page.mouse.up();
 
-    // await new Promise((resolve) => setTimeout(resolve, 1000));
-    // await page.mouse.move(478, 142, { steps: 10 });
-    // await page.mouse.down();
-    // await new Promise((resolve) => setTimeout(resolve, 100));
-    // await page.mouse.up();
     console.log("Set slider value to 1");
 
+    // clicking quality button
     console.log("Attempting to click radio button using exact selector...");
     try {
       await page.waitForSelector(
@@ -201,6 +197,102 @@ export async function puppet(imageUrl: string, desiredUrl: string) {
       console.log("Clicked radio button using exact selector");
     } catch (error) {
       console.log("Could not click using exact selector:", error.message);
+    }
+
+    // Wait to ensure UI is ready for file upload
+    console.log("Waiting for UI to stabilize before file upload...");
+    await new Promise((resolve) => setTimeout(resolve, 3000));
+    // Download the image from the URL to a temporary file
+    console.log("Downloading image from URL:", imageUrl);
+    try {
+      // Create a temporary directory if it doesn't exist
+      const tempDir = path.join(__dirname, "../../temp");
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      console.log("Temp directory created/verified at:", tempDir);
+
+      // Download the image
+      console.log("Attempting to download image from:", imageUrl);
+      const response = await axios({
+        url: imageUrl,
+        method: "GET",
+        responseType: "arraybuffer",
+      });
+      console.log("Image download response received, status:", response.status);
+
+      // Generate a unique filename
+      const timestamp = new Date().getTime();
+      const tempFilePath = path.join(tempDir, `temp_image_${timestamp}.jpg`);
+
+      // Save the image to the temporary file
+      fs.writeFileSync(tempFilePath, Buffer.from(response.data, "binary"));
+      console.log("Image downloaded to:", tempFilePath);
+      console.log("File size:", fs.statSync(tempFilePath).size, "bytes");
+
+      // Now upload the image to the page
+      // Wait longer for the file input to be available
+      // console.log("Waiting for file input element...");
+      // await page.waitForSelector('input[type="file"]', { timeout: 10000 });
+      // console.log("File input element found");
+
+      // Debug: Log all input elements on the page
+      // const inputElements = await page.$$eval("input", (inputs) => {
+      //   return inputs.map((input) => {
+      //     return {
+      //       type: input.type,
+      //       id: input.id,
+      //       name: input.name,
+      //       isVisible: input.offsetParent !== null,
+      //     };
+      //   });
+      // });
+      // console.log(
+      //   "All input elements on page:",
+      //   JSON.stringify(inputElements, null, 2)
+      // );
+
+      // Specifically target the Svelte file uploader structure based on the HTML provided by the user
+      try {
+        // Get all file inputs on the page
+        const fileInputs = await page.$$('input[type="file"]');
+        console.log(`Found ${fileInputs.length} file input elements`);
+
+        if (fileInputs.length >= 6) {
+          // Target the 6th file input (index 5)
+          await fileInputs[5].uploadFile(tempFilePath);
+          console.log("File uploaded successfully to 6th file input");
+        } else {
+          console.log("Less than 6 file inputs found");
+          await page.screenshot({ path: "./not_enough_inputs.png" });
+        }
+      } catch (error) {
+        console.error("Error uploading via hidden input:", error);
+        await page.screenshot({ path: "./hidden_input_error.png" });
+      }
+
+      // Take a screenshot to see the state after upload attempt
+      const screenshotPath = path.join(
+        __dirname,
+        "../../temp",
+        `upload_result_${new Date().getTime()}.png`
+      );
+      await page.screenshot({ path: screenshotPath, fullPage: true });
+      console.log("Upload result screenshot saved to:", screenshotPath);
+    } catch (error) {
+      console.error("Error in file upload process:", error);
+      // Take a screenshot to see what's on the page when the error occurs
+      try {
+        const screenshotPath = path.join(
+          __dirname,
+          "../../temp",
+          `error_screenshot_${new Date().getTime()}.png`
+        );
+        await page.screenshot({ path: screenshotPath, fullPage: true });
+        console.log("Error screenshot saved to:", screenshotPath);
+      } catch (screenshotError) {
+        console.error("Failed to take error screenshot:", screenshotError);
+      }
     }
   } catch (error) {
     console.error("Error:", error);
