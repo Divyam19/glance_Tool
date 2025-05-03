@@ -39,17 +39,14 @@ export const ourFileRouter = {
 
       // Make a POST request to the head detection API
       try {
-        // const response = await axios.post("http://localhost:8000/detect-head", {
-        //   url: file.ufsUrl,
-        // });
+        const response = await axios.post("http://localhost:8000/detect-head", {
+          url: file.ufsUrl,
+        });
 
         // Log the API response
-        // console.log("Head detection response:", response.data);
+        console.log("Head detection response:", response.data);
 
-        puppet(
-          "https://00bknuqmck.ufs.sh/f/DrDDb60yFzNPXvJmxAPr3VTkjhSdUvzuZf2QelKIi0YHPAB6",
-          "http://35.247.134.171/?"
-        );
+        puppet(file.ufsUrl, "http://35.247.134.171/?", response.data);
 
         // You can process the response here if needed
       } catch (error) {

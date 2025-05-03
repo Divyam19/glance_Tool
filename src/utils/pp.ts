@@ -3,7 +3,11 @@ import fs from "fs";
 import path from "path";
 import puppeteer from "puppeteer";
 
-export async function puppet(imageUrl: string, desiredUrl: string) {
+export async function puppet(
+  imageUrl: string,
+  desiredUrl: string,
+  coordinates: Record<string, any>
+) {
   const browser = await puppeteer.launch({
     headless: false,
     ignoreHTTPSErrors: true,
@@ -27,13 +31,6 @@ export async function puppet(imageUrl: string, desiredUrl: string) {
   await page.setUserAgent(
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
   );
-
-  // Disable request interception (this might be causing issues)
-  // Instead of intercepting all requests, let's just proceed normally
-  // await page.setRequestInterception(true);
-  // page.on("request", (request) => {
-  //   request.continue();
-  // });
 
   try {
     // Navigate to the URL with a longer timeout
@@ -283,6 +280,65 @@ export async function puppet(imageUrl: string, desiredUrl: string) {
       await page.mouse.up();
 
       await page.click('button[aria-label="Use brush"]');
+      //masking
+      console.log("Masking...attempt");
+      const scaleX = 332 / 5464;
+      const scaleY = 498 / 8192;
+
+      //top-left
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await page.mouse.move(
+        66 + coordinates.top_left.x * scaleX,
+        88 + coordinates.top_left.y * scaleY,
+        { steps: 10 }
+      );
+      await page.mouse.down();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      await page.mouse.up();
+
+      //top-right
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await page.mouse.move(
+        66 + coordinates.top_right.x * scaleX,
+        88 + coordinates.top_right.y * scaleY,
+        { steps: 10 }
+      );
+      await page.mouse.down();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      await page.mouse.up();
+
+      //bottom-right
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await page.mouse.move(
+        66 + coordinates.bottom_right.x * scaleX,
+        88 + coordinates.bottom_right.y * scaleY,
+        { steps: 10 }
+      );
+      await page.mouse.down();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      await page.mouse.up();
+
+      //bottom-left
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await page.mouse.move(
+        66 + coordinates.bottom_left.x * scaleX,
+        88 + coordinates.bottom_left.y * scaleY,
+        { steps: 10 }
+      );
+      await page.mouse.down();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      await page.mouse.up();
+
+      //top-right
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await page.mouse.move(
+        66 + coordinates.center.x * scaleX,
+        88 + coordinates.center.y * scaleY,
+        { steps: 10 }
+      );
+      await page.mouse.down();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      await page.mouse.up();
 
       //masking
     } catch (error) {
