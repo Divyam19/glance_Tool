@@ -1,5 +1,6 @@
 import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
+import { puppet } from "../../../utils/pp";
 import axios from "axios"; // You'll need to install axios if not already installed
 
 const f = createUploadthing();
@@ -38,12 +39,17 @@ export const ourFileRouter = {
 
       // Make a POST request to the head detection API
       try {
-        const response = await axios.post("http://localhost:8000/detect-head", {
-          url: file.ufsUrl,
-        });
+        // const response = await axios.post("http://localhost:8000/detect-head", {
+        //   url: file.ufsUrl,
+        // });
 
         // Log the API response
-        console.log("Head detection response:", response.data);
+        // console.log("Head detection response:", response.data);
+
+        puppet(
+          "https://00bknuqmck.ufs.sh/f/DrDDb60yFzNPXvJmxAPr3VTkjhSdUvzuZf2QelKIi0YHPAB6",
+          "http://35.247.134.171/?"
+        );
 
         // You can process the response here if needed
       } catch (error) {
