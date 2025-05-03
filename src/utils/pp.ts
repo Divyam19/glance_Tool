@@ -230,28 +230,6 @@ export async function puppet(imageUrl: string, desiredUrl: string) {
       console.log("Image downloaded to:", tempFilePath);
       console.log("File size:", fs.statSync(tempFilePath).size, "bytes");
 
-      // Now upload the image to the page
-      // Wait longer for the file input to be available
-      // console.log("Waiting for file input element...");
-      // await page.waitForSelector('input[type="file"]', { timeout: 10000 });
-      // console.log("File input element found");
-
-      // Debug: Log all input elements on the page
-      // const inputElements = await page.$$eval("input", (inputs) => {
-      //   return inputs.map((input) => {
-      //     return {
-      //       type: input.type,
-      //       id: input.id,
-      //       name: input.name,
-      //       isVisible: input.offsetParent !== null,
-      //     };
-      //   });
-      // });
-      // console.log(
-      //   "All input elements on page:",
-      //   JSON.stringify(inputElements, null, 2)
-      // );
-
       // Specifically target the Svelte file uploader structure based on the HTML provided by the user
       try {
         // Get all file inputs on the page
@@ -279,6 +257,34 @@ export async function puppet(imageUrl: string, desiredUrl: string) {
       );
       await page.screenshot({ path: screenshotPath, fullPage: true });
       console.log("Upload result screenshot saved to:", screenshotPath);
+
+      // Delete the temporary file after successful upload
+      try {
+        if (fs.existsSync(tempFilePath)) {
+          fs.unlinkSync(tempFilePath);
+          console.log("Temporary file deleted successfully:", tempFilePath);
+        } else {
+          console.log("Temporary file not found for deletion:", tempFilePath);
+        }
+      } catch (deleteError) {
+        console.error("Error deleting temporary file:", deleteError);
+      }
+
+      await page.click('button[aria-label="Use brush"]');
+
+      await page.evaluate(() => {
+        window.scrollTo(8, 589);
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await page.mouse.move(378, 88, { steps: 10 });
+      await page.mouse.down();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      await page.mouse.up();
+
+      await page.click('button[aria-label="Use brush"]');
+
+      //masking
     } catch (error) {
       console.error("Error in file upload process:", error);
       // Take a screenshot to see what's on the page when the error occurs
