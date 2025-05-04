@@ -285,22 +285,11 @@ export async function puppet(
       const scaleX = 332 / 5464;
       const scaleY = 498 / 8192;
 
-      //top-left
+      //bottom-left
       await new Promise((resolve) => setTimeout(resolve, 1000));
       await page.mouse.move(
-        66 + coordinates.top_left.x * scaleX,
-        88 + coordinates.top_left.y * scaleY,
-        { steps: 10 }
-      );
-      await page.mouse.down();
-      await new Promise((resolve) => setTimeout(resolve, 100));
-      await page.mouse.up();
-
-      //top-right
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      await page.mouse.move(
-        66 + coordinates.top_right.x * scaleX,
-        88 + coordinates.top_right.y * scaleY,
+        40 + coordinates.center.x * scaleX,
+        97 + coordinates.top_left.y * scaleY,
         { steps: 10 }
       );
       await page.mouse.down();
@@ -310,19 +299,19 @@ export async function puppet(
       //bottom-right
       await new Promise((resolve) => setTimeout(resolve, 1000));
       await page.mouse.move(
-        66 + coordinates.bottom_right.x * scaleX,
-        88 + coordinates.bottom_right.y * scaleY,
+        90 + coordinates.center.x * scaleX,
+        97 + coordinates.top_left.y * scaleY,
         { steps: 10 }
       );
       await page.mouse.down();
       await new Promise((resolve) => setTimeout(resolve, 100));
       await page.mouse.up();
 
-      //bottom-left
+      //top-left
       await new Promise((resolve) => setTimeout(resolve, 1000));
       await page.mouse.move(
-        66 + coordinates.bottom_left.x * scaleX,
-        88 + coordinates.bottom_left.y * scaleY,
+        45 + coordinates.center.x * scaleX,
+        74 + coordinates.top_left.y * scaleY,
         { steps: 10 }
       );
       await page.mouse.down();
@@ -332,8 +321,19 @@ export async function puppet(
       //top-right
       await new Promise((resolve) => setTimeout(resolve, 1000));
       await page.mouse.move(
+        85 + coordinates.center.x * scaleX,
+        74 + coordinates.top_left.y * scaleY,
+        { steps: 10 }
+      );
+      await page.mouse.down();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      await page.mouse.up();
+
+      //top-center
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await page.mouse.move(
         66 + coordinates.center.x * scaleX,
-        88 + coordinates.center.y * scaleY,
+        74 + coordinates.top_left.y * scaleY,
         { steps: 10 }
       );
       await page.mouse.down();
@@ -361,6 +361,6 @@ export async function puppet(
   } finally {
     // Wait to see the result before closing
     await new Promise((resolve) => setTimeout(resolve, 5000));
-    // await browser.close();
+    await browser.close();
   }
 }
