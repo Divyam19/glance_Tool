@@ -340,7 +340,28 @@ export async function puppet(
       await new Promise((resolve) => setTimeout(resolve, 100));
       await page.mouse.up();
 
-      //masking
+      //writing the prompt
+      // Wait for all textareas to load
+      await page.waitForSelector("textarea");
+
+      // Type in the first visible textarea
+      await page.evaluate(() => {
+        const textareas = document.querySelectorAll("textarea");
+        if (textareas.length > 0) {
+          textareas[0].focus();
+        }
+      });
+
+      // Use Puppeteer to type into the first textarea
+      const textareas = await page.$$("textarea");
+      if (textareas.length > 0) {
+        await textareas[0].type("Bald man with a chinese face and black skin");
+      }
+      console.log("prompt written");
+
+      //Click on generate button
+      await page.click("#generate_button");
+      console.log("Generate button clicked");
     } catch (error) {
       console.error("Error in file upload process:", error);
       // Take a screenshot to see what's on the page when the error occurs
@@ -361,6 +382,6 @@ export async function puppet(
   } finally {
     // Wait to see the result before closing
     await new Promise((resolve) => setTimeout(resolve, 5000));
-    await browser.close();
+    // await browser.close();
   }
 }
