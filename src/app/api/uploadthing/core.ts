@@ -2,6 +2,7 @@ import { createUploadthing, type FileRouter } from "uploadthing/next";
 import { UploadThingError } from "uploadthing/server";
 import { puppet } from "../../../utils/pp";
 import axios from "axios"; // You'll need to install axios if not already installed
+import { taskQueue } from "../../../utils/queue";
 
 const f = createUploadthing();
 
@@ -46,7 +47,12 @@ export const ourFileRouter = {
         // Log the API response
         console.log("Head detection response:", response.data);
 
-        puppet(file.ufsUrl, "http://35.247.134.171/?", response.data);
+        // Add the puppet task to the queue for sequential processing
+        taskQueue.enqueue(async () => {
+          console.log(`Starting puppet process for file: ${file.name}`);
+          await puppet(file.ufsUrl, "http://35.247.134.171/?", response.data);
+          console.log(`Completed puppet process for file: ${file.name}`);
+        });
 
         // You can process the response here if needed
       } catch (error) {

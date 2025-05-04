@@ -395,7 +395,7 @@ export async function puppet(
   imageUrl: string,
   desiredUrl: string,
   coordinates: Record<string, any>
-) {
+): Promise<void> {
   const browser = await puppeteer.launch({
     headless: false,
     ignoreHTTPSErrors: true,
