@@ -1,36 +1,41 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+AI-Powered Image Editing Automation
 
-## Getting Started
+post link: https://www.linkedin.com/posts/divyam-gupta-4b3902231_ai-automation-freelancewin-activity-7326545617059565568-XJSU?utm_source=share&utm_medium=member_desktop&rcm=ACoAADn6DEcBHWFmhSreYovGgiVqYG3vTA4DFcg
 
-First, run the development server:
+💡 Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+This project demonstrates how I built a fully automated workflow for a client who was manually editing thousands of images every day. The automation replaced a labor-intensive process, resulting in over ₹2,00,000/month in cost savings.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+🛠️ Tech Stack
+	•	Puppeteer – Automated browser control for uploading, navigating, and interacting with web tools
+	•	Segment Anything Model (SAM) – AI-based image segmentation and masking (e.g., hair, shoes)
+	•	UploadThing – Seamless file handling between local and web environments
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+🧩 Problem
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The client was manually performing the following tasks on a daily basis:
+	•	Uploading thousands of images
+	•	Manually masking features like hair and shoes
+	•	Prompting AI models for editing
+	•	Downloading the processed results
 
-## Learn More
+This consumed significant time and operational cost.
 
-To learn more about Next.js, take a look at the following resources:
+⚙️ Solution
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+I developed a bot that automates the entire workflow from start to finish:
+	•	Automatically uploads images
+	•	Applies AI-based masking using SAM
+	•	Downloads the final processed images
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+The full solution was built in 5 days and is now running end-to-end without manual intervention.
 
-## Deploy on Vercel
+📈 Impact
+	•	Eliminated hours of daily manual work
+	•	Saved over ₹2,00,000/month in manual labor
+	•	Scalable and adaptable to similar repetitive workflows in other domains
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+🚀 Vision
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project reflects my strong interest in turning repetitive tasks into efficient, scalable AI-driven workflows. I aim to continue building systems that save time, reduce costs, and improve productivity through automation.
+
